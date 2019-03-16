@@ -15,6 +15,8 @@ ARIN_RDAP_URL = 'https://rdap.arin.net/registry/ip/'
 nets = []
 orgs = []
 cidrs = []
+orgs_cidr = {}
+ipv6_orgs_cidr = {}
 
 def banner():
     print('''\
@@ -38,6 +40,8 @@ parser.add_argument('-w', '--wildcard', action='store_true', help='Perform a wil
                                                                   'Not recommended for smaller company names')
 parser.add_argument('-a', '--arin', action='store_true', help='Skip Shodan lookup and only output the '
                                                               'discovered CIDR notations from ARIN')
+parser.add_argument('-n', '--no-prompt', action='store_true', help='Do not prompt to continue when discovering a large '
+                                                                   'amount of organizations')
 args = parser.parse_args()
 
 if args.outfile:
@@ -51,14 +55,11 @@ def main():
             print('[!] Shodan API key is missing! You need to fill in your key before doing Shodan queries!')
             exit(1)
         query(args.company)
+        print_orgs()
         shodan_query(cidrs)
     else:
         query(args.company)
-        print('\n[*] Discovered CIDR notations for {}:\n'.format(args.company))
-        if len(cidrs) != 0:
-            for ip_cidr in cidrs: print(ip_cidr)
-        else:
-            print('[-] No discovered CIDR notations')
+        print_orgs()
         print('\n[*] Done!')
 
 def query(company):
@@ -79,11 +80,20 @@ def query(company):
     elif soup.handle:
         orgs.append(''.join((soup.find_all('name')[1].string,' (',soup.find('handle').string,') ')))
         nets.append(soup.ref.string+'/nets')
+        print('[*] {} organizational result discovered for {}\n'.format(len(orgs), args.company))
     else:
         names = soup.find_all('td')
         for name in names:
             orgs.append(re.sub(' +',' ',name.text))
             nets.append(name.a['href']+'/nets')
+        if len(orgs) > 50 and not args.no_prompt:
+            ask = input('[*] {} organizations were discovered. This could take some time.\n[*] Are you '
+                        'sure you want to continue? [Y/n]: '.format(len(orgs))) or "Y"
+            if ask.lower() != 'y':
+                print('[*] Exiting...')
+                exit(0)
+        else:
+            print('[*] {} organizational results discovered for {}\n'.format(len(orgs),args.company))
 
     for url in nets:
         print('[*] Checking ' + orgs[count] + 'for netblocks...')
@@ -99,14 +109,23 @@ def query(company):
             try:
                 for ip in block_json['cidr0_cidrs']:
                     print('\t\t[+] CIDR: {}/{}'.format(ip['v4prefix'],ip['length']))
-                    cidrs.append(''.join((ip['v4prefix'],'/',str(ip['length']))))
+                    ip_cidr = ''.join((ip['v4prefix'],'/',str(ip['length'])))
+                    cidrs.append(ip_cidr)
+                    if orgs[count] in orgs_cidr.keys():
+                        orgs_cidr[orgs[count]+'('+str(count)+') '] = ip_cidr
+                    else:
+                        orgs_cidr[orgs[count]] = ip_cidr
             except KeyError:
                 for ip in block_json['cidr0_cidrs']:
                     print('\t\t[+] CIDR: {}/{}'.format(ip['v6prefix'], ip['length']))
+                    ip_cidr = ''.join((ip['v6prefix'], '/', str(ip['length'])))
+                    if orgs[count] in orgs_cidr.keys():
+                        ipv6_orgs_cidr[orgs[count]+'('+str(count)+') '] = ip_cidr
+                    else:
+                        ipv6_orgs_cidr[orgs[count]] = ip_cidr
         count += 1
 
 def shodan_query(cidr_notated):
-    results = 0
     print('\n[*] Searching for open ports on Shodan for discovered CIDR notations...')
     api = shodan.Shodan(SHODAN_API_KEY)
     for ip_cidr in cidr_notated:
@@ -137,6 +156,18 @@ def shodan_query(cidr_notated):
         print('\n[*] Done! Results saved in {}\n'.format(args.outfile))
     else:
         print('\n[*] Done!\n')
+
+def print_orgs():
+    print('\n[*] Discovered CIDR notations for {}:\n'.format(args.company))
+    if len(cidrs) != 0:
+        print('[*] IPv4 CIDR Notations:')
+        for org, cidr in orgs_cidr.items():
+            print('{}- {}'.format(org, cidr))
+        print('\n[*] IPv6 CIDR Notations:')
+        for org, cidr in ipv6_orgs_cidr.items():
+            print('{}- {}'.format(org, cidr))
+    else:
+        print('[-] No discovered CIDR notations')
 
 if __name__ == "__main__":
     main()
