@@ -53,22 +53,32 @@ $ python3 shodarin.py -w github
 
 [*] Searching ARIN for *github*...
 
+[*] 1 organizational result discovered for github
+
 [*] Checking GitHub, Inc. (GITHU) for netblocks...
-  [+] range: 192.30.252.0 - 192.30.255.255
-    [+] CIDR: 192.30.252.0/22
-  [+] range: 2620:112:3000:: - 2620:112:300F:FFFF:FFFF:FFFF:FFFF:FFFF
-    [+] CIDR: 2620:112:3000::/44
-  [+] range: 140.82.112.0 - 140.82.127.255
-    [+] CIDR: 140.82.112.0/20
+	[+] range: 192.30.252.0 - 192.30.255.255
+		[+] CIDR: 192.30.252.0/22
+	[+] range: 2620:112:3000:: - 2620:112:300F:FFFF:FFFF:FFFF:FFFF:FFFF
+		[+] CIDR: 2620:112:3000::/44
+	[+] range: 140.82.112.0 - 140.82.127.255
+		[+] CIDR: 140.82.112.0/20
+
+[*] Discovered CIDR notations for github:
+
+[*] IPv4 CIDR Notations:
+GitHub, Inc. (GITHU) - 192.30.252.0/22
+GitHub, Inc. (GITHU) (0) - 140.82.112.0/20
+
+[*] IPv6 CIDR Notations:
+GitHub, Inc. (GITHU) (0) - 2620:112:3000::/44
 
 [*] Searching for open ports on Shodan for discovered CIDR notations...
 
 [*] Matches for 192.30.252.0/22
-  [+] 192.30.255.117:80
-  [+] 192.30.255.117:443
-  [+] 192.30.252.82:80
-  [+] 192.30.252.82:443
-  [+] 192.30.253.66:80
+	[+] 192.30.255.117:80
+	[+] 192.30.255.117:443
+	[+] 192.30.252.82:443
+	[+] 192.30.253.66:80
   
 <<snipped>>
 ```
