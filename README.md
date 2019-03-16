@@ -22,7 +22,7 @@ $ python3 shodarin.py -h
 
                                             Author: @fragsh3ll
 
-usage: shodarin.py [-h] [-o OUTFILE] [-w] [-a] company
+usage: shodarin.py [-h] [-o OUTFILE] [-w] [-a] [-n] company
 
 positional arguments:
   company               Company to query on ARIN
@@ -37,6 +37,8 @@ optional arguments:
                         recommended for smaller company names
   -a, --arin            Skip Shodan lookup and only output the discovered CIDR
                         notations from ARIN
+  -n, --no-prompt       Do not prompt to continue when discovering a large
+                        amount of organizations
 ```
 ### Usage example:
 ```
