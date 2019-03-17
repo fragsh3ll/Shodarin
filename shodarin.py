@@ -8,6 +8,13 @@ import csv
 import time
 from bs4 import BeautifulSoup
 
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS += 'HIGH:!DH:!aNULL'
+try:
+    requests.packages.urllib3.contrib.pyopenssl.DEFAULT_SSL_CIPHER_LIST += 'HIGH:!DH:!aNULL'
+except AttributeError:
+    # no pyopenssl support used / needed / available
+    pass
+
 SHODAN_API_KEY = ''
 ARIN_SEARCH_URL = 'https://whois.arin.net/ui/query.do'
 ARIN_RDAP_URL = 'https://rdap.arin.net/registry/ip/'
