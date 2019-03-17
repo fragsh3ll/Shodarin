@@ -111,18 +111,12 @@ def query(company):
                     print('\t\t[+] CIDR: {}/{}'.format(ip['v4prefix'],ip['length']))
                     ip_cidr = ''.join((ip['v4prefix'],'/',str(ip['length'])))
                     cidrs.append(ip_cidr)
-                    if orgs[count] in orgs_cidr.keys():
-                        orgs_cidr[orgs[count]+'('+str(count)+') '] = ip_cidr
-                    else:
-                        orgs_cidr[orgs[count]] = ip_cidr
+                    orgs_cidr.setdefault(orgs[count], []).append(ip_cidr)
             except KeyError:
                 for ip in block_json['cidr0_cidrs']:
                     print('\t\t[+] CIDR: {}/{}'.format(ip['v6prefix'], ip['length']))
                     ip_cidr = ''.join((ip['v6prefix'], '/', str(ip['length'])))
-                    if orgs[count] in orgs_cidr.keys():
-                        ipv6_orgs_cidr[orgs[count]+'('+str(count)+') '] = ip_cidr
-                    else:
-                        ipv6_orgs_cidr[orgs[count]] = ip_cidr
+                    ipv6_orgs_cidr.setdefault(orgs[count], []).append(ip_cidr)
         count += 1
 
 def shodan_query(cidr_notated):
@@ -162,10 +156,12 @@ def print_orgs():
     if len(cidrs) != 0:
         print('[*] IPv4 CIDR Notations:')
         for org, cidr in orgs_cidr.items():
-            print('{}- {}'.format(org, cidr))
+            for item in range(len(cidr)):
+                print('{}- {}'.format(org, cidr[item]))
         print('\n[*] IPv6 CIDR Notations:')
         for org, cidr in ipv6_orgs_cidr.items():
-            print('{}- {}'.format(org, cidr))
+            for item in range(len(cidr)):
+                print('{}- {}'.format(org, cidr[item]))
     else:
         print('[-] No discovered CIDR notations')
 
