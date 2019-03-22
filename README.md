@@ -8,7 +8,7 @@ Currently, the `net` filter on Shodan doesn't support IPv6. Until it does, IPv6 
 
 #### ***Since this tool performs Shodan queries, you will need to modify the source with your Shodan API key!***
 
-### Help message
+## Help message
 
 ```
 $ python3 shodarin.py -h
@@ -40,7 +40,7 @@ optional arguments:
   -n, --no-prompt       Do not prompt to continue when discovering a large
                         amount of organizations
 ```
-### Usage example:
+## Usage example:
 ```
 $ python3 shodarin.py -w github
 
@@ -84,5 +84,5 @@ GitHub, Inc. (GITHU) (0) - 2620:112:3000::/44
   
 <<snipped>>
 ```
-### CSV Example
+## CSV Example
 ![CSV Example](example.png)
