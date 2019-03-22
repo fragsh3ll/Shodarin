@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# Written by Richard Young (@fragsh3ll)
+
 import requests
 import argparse
 import shodan
@@ -15,6 +17,7 @@ except AttributeError:
     # no pyopenssl support used / needed / available
     pass
 
+# Set Shodan API key here
 SHODAN_API_KEY = ''
 ARIN_SEARCH_URL = 'https://whois.arin.net/ui/query.do'
 ARIN_RDAP_URL = 'https://rdap.arin.net/registry/ip/'
@@ -82,8 +85,9 @@ def query(company):
     soup = BeautifulSoup(r.text,"html.parser")
 
     if 'could not be found' in soup.text:
-        print('[-] Company not found. Try searching with wildcard (-w).')
-        exit(1)
+        print('[-] Company not found. Try searching with wildcard (-w).') if not args.wildcard else \
+            print('[-] Company not found.')
+        exit(0)
     elif soup.handle:
         orgs.append(''.join((soup.find_all('name')[1].string,' (',soup.find('handle').string,') ')))
         nets.append(soup.ref.string+'/nets')
