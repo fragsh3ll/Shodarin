@@ -25,8 +25,12 @@ ARIN_RDAP_URL = 'https://rdap.arin.net/registry/ip/'
 nets = []
 orgs = []
 cidrs = []
+ports = []
 orgs_cidr = {}
 ipv6_orgs_cidr = {}
+
+global csv_writer
+specific_ports = False
 
 def banner():
     print('''\
@@ -52,12 +56,18 @@ parser.add_argument('-a', '--arin', action='store_true', help='Skip Shodan looku
                                                               'discovered CIDR notations from ARIN')
 parser.add_argument('-n', '--no-prompt', action='store_true', help='Do not prompt to continue when discovering a large '
                                                                    'amount of organizations')
+parser.add_argument('-p', '--ports', help='Only show results for specified ports (ex: 21,80,443)')
+
 args = parser.parse_args()
 
 if args.outfile:
     csv_file = open(args.outfile,'w',encoding='utf-8',newline='')
     csv_writer = csv.writer(csv_file)
     csv_writer.writerow(['IP Address','Port','Transport','ISP','Organization','Data','HTML Title'])
+
+if args.ports:
+    specific_ports = True
+    ports = args.ports.split(',')
 
 def main():
     if not args.arin:
@@ -145,22 +155,27 @@ def shodan_query(cidr_notated):
         else:
             print('\n[*] Matches for {}'.format(ip_cidr))
         for content in hosts['matches']:
-            if args.outfile:
-                if 'http' not in content or content['http']['title'] is None:
-                    csv_writer.writerow(
-                        [content['ip_str'], content['port'], content['transport'], content['isp'], content['org'], content['data'],
-                         'N/A'])
-                else:
-                    csv_writer.writerow(
-                        [content['ip_str'], content['port'], content['transport'], content['isp'], content['org'], content['data'],
-                         content['http']['title']])
-                print('\t[+] ' + content['ip_str'], content['port'], sep=':')
+            if specific_ports:
+                if str(content['port']) in ports:
+                    writer(content,outfile=True) if args.outfile else writer(content)
             else:
-                print('\t[+] '+content['ip_str'],content['port'],sep=':')
+                writer(content,outfile=True) if args.outfile else writer(content)
     if args.outfile:
         print('\n[*] Done! Results saved in {}\n'.format(args.outfile))
     else:
         print('\n[*] Done!\n')
+
+def writer(item,outfile=False):
+    if outfile == True:
+        if 'http' not in item or item['http']['title'] is None:
+            csv_writer.writerow(
+                [item['ip_str'], item['port'], item['transport'], item['isp'], item['org'],
+                 item['data'], 'N/A'])
+        else:
+            csv_writer.writerow(
+                [item['ip_str'], item['port'], item['transport'], item['isp'], item['org'],
+                 item['data'], item['http']['title']])
+    print('\t[+] ' + item['ip_str'], item['port'], sep=':')
 
 def print_orgs():
     print('\n[*] Discovered CIDR notations for {}:\n'.format(args.company))
