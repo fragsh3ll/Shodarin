@@ -39,6 +39,8 @@ optional arguments:
                         notations from ARIN
   -n, --no-prompt       Do not prompt to continue when discovering a large
                         amount of organizations
+  -p PORTS, --ports PORTS
+                        Only show results for specified ports (ex: 21,80,443)
 ```
 ## Usage example:
 ```
